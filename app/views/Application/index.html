@@ -22,7 +22,10 @@
 
 </section>
 
-<section><h4>Search results :</h4><div id="search-results"></div></section>
+<section><h4>Search results :</h4>
+
+   <div id="search-results"></div>
+</section>
 
 <section>
    <h4>Stuff you should like :</h4>
@@ -38,15 +41,9 @@
          <fieldset>
 
             <a class="google openid_large_btn" href="javascript:openid.signin('google');"
-               title="se connecter avec Google">google</a>
-            <a class="yahoo openid_large_btn" href="javascript:openid.signin('yahoo');" title="se connecter avec Yahoo">yahoo</a>
-
-            <noscript>
-               <p>OpenID is service that allows you to log-on to many different websites using a single indentity.
-                  Find out <a href="http://openid.net/what/">more about OpenID</a> and <a
-                          href="http://openid.net/get/">how to get an OpenID enabled account</a>.</p>
-            </noscript>
-
+               title="Connect with Google">google</a>
+            <a class="yahoo openid_large_btn" href="javascript:openid.signin('yahoo');"
+               title="Connect with Yahoo">yahoo</a>
 
             #{if flash.error}
             <div class="errorbox">
@@ -60,28 +57,37 @@
    </div>
 </section>
 
-<section><h4>Recent stuff :</h4><div id="recents"></div></section>
-<section><h4>Popular stuff :</h4><div id="populars"></div></section>
+<section><h4>Recent stuff :</h4>
+
+   <div id="recents"></div>
+</section>
+<section><h4>Popular stuff :</h4>
+
+   <div id="populars"></div>
+</section>
 
 <section class="connected" id="add-liked">
    #{form @Reco.addLiked(), ,id:'add-liked-form'}
    <fieldset>
       <legend>Add stuff you want to share :</legend>
       <div>
-         <label for="add-liked-input-name">Title : </label>
-         <input type="text" id="add-liked-input-name" name="add-liked-input-name"
-                value="${flash.addLikedName}" required/>
-         <label for="add-liked-input-description">Description : </label>
-         <input type="text" id="add-liked-input-description" name="add-liked-input-description"
-                value="${flash.addLikeddescription}" required/>
-         <button id="add-liked-button" type="submit" name="submit">Add</button>
+         <p>
+            <label for="add-liked-input-name">Title : </label>
+            <input type="text" id="add-liked-input-name" name="add-liked-input-name"
+                   value="${flash.addLikedName}" required/>
+         </p>
+
+         <p>
+            <label for="add-liked-input-description">Description : </label>
+            <textarea type="text" id="add-liked-input-description" name="add-liked-input-description"
+                      value="${flash.addLikeddescription}" required> </textarea>
+
+         <p>
+            <button id="add-liked-button" type="submit" name="submit">Add</button>
       </div>
-      #{if flash.addLikedError}
-      <div class="errorbox">
-         <h2>Erreur</h2>
-         ${flash.addLikedError}
+      <div id="add-liked-error" style="display: none;" class="errorbox">
+         Sorry, I can't add that.
       </div>
-      #{/if}
    </fieldset>
    #{/form}
 </section>
@@ -90,43 +96,44 @@
 <script type="text/javascript">
    require(["jquery", "widgets/likedlist", "widgets/likedaddbox", "openid-jquery"], function($, LikedList, LikedAddBox) {
 
-      var withConnectedUser = function (username) {
-         $('#username-welcome').html(username);
-         $('.not-connected').hide();
-         $('.connected').fadeIn("fast");
-         LikedList.Instance('recommendations', '@{Reco.recommend()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchlike()}');
-         LikedAddBox.Instance('add-liked', '@{Reco.addLiked()}');
-      };
-
-      var withoutConnectedUser = function () {
-         $('.connected').hide();
-         $('.not-connected').fadeIn("fast");
-      };
-
-      var initPage = function() {
-         $.ajax({
-            url: '@{Security.userName()}',
-            success: withConnectedUser,
-            error: withoutConnectedUser
-         });
-
-         openid.init('openid_identifier');
-         openid.setDemoMode(false);
-      };
-
       $(document).ready(function() {
-
-         initPage();
 
          $('#search-button').click(function(e) {
             e.preventDefault();
             var searchText = $('#search-input').val();
-            LikedList.Instance('search-results', '@{Application.search()}', {limit:10,text: searchText}, '@{Reco.isLiked()}', '@{Reco.switchlike()}');
+            LikedList.Instance('search-results', '@{Application.search()}', {limit:10,text: searchText}, '@{Reco.isLiked()}', '@{Reco.switchlike()}', '@{Reco.ignore()}');
          });
 
-         LikedList.Instance('recents', '@{Application.lastAdded()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchlike()}');
-         LikedList.Instance('populars', '@{Application.mostLiked()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchlike()}');
+         var recentsLiked = new LikedList.Instance('recents', '@{Application.lastAdded()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchlike()}', '@{Reco.ignore()}');
+         var popularsLiked = new LikedList.Instance('populars', '@{Application.mostLiked()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchlike()}', '@{Reco.ignore()}');
 
+         var withConnectedUser = function (username) {
+            $('#username-welcome').html(username);
+            $('.not-connected').hide();
+            $('.connected').fadeIn("fast");
+            LikedList.Instance('recommendations', '@{Reco.recommend()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchlike()}', '@{Reco.ignore()}');
+            var likedAddBox = new LikedAddBox.Instance('add-liked', '@{Reco.addLiked()}');
+            likedAddBox.onLikedAdded.add(recentsLiked.refresh);
+            likedAddBox.onLikedAdded.add(popularsLiked.refresh);
+         };
+
+         var withoutConnectedUser = function () {
+            $('.connected').hide();
+            $('.not-connected').fadeIn("fast");
+         };
+
+         var initPage = function() {
+            $.ajax({
+               url: '@{Security.userName()}',
+               success: withConnectedUser,
+               error: withoutConnectedUser
+            });
+
+            openid.init('openid_identifier');
+            openid.setDemoMode(false);
+         };
+
+         initPage();
       });
    });
 </script>
