@@ -38,21 +38,21 @@ require.def("widgets/likedlist", ["jquery", "utils"], function($, Utils) {
             var likeOrUnlikeButton = "";
             var ignoreButton = "";
             if (el.liked == true) {
-               likeOrUnlikeButton = " <a id='" + containerId + "-list-a-" + el.id + "' href='#'>unlike</a> ";
+               likeOrUnlikeButton = " <a class='connected' id='" + containerId + "-list-a-" + el.id + "' href='#'>unlike</a> ";
             } else if (el.liked == false) {
-               likeOrUnlikeButton = " <a id='" + containerId + "-list-a-" + el.id + "' href='#'>like</a> ";
+               likeOrUnlikeButton = " <a class='connected' id='" + containerId + "-list-a-" + el.id + "' href='#'>like</a> ";
             }
             if (el.ignored == true) {
-               ignoreButton = " <a id='" + containerId + "-list-ignore-" + el.id + "' href='#'>unignore</a> ";
+               ignoreButton = " <a class='connected' id='" + containerId + "-list-ignore-" + el.id + "' href='#'>unignore</a> ";
             } else if (el.ignored == false) {
-               ignoreButton = " <a id='" + containerId + "-list-ignore-" + el.id + "' href='#'>ignore</a> ";
+               ignoreButton = " <a class='connected' id='" + containerId + "-list-ignore-" + el.id + "' href='#'>ignore</a> ";
             }
-            $('#' + containerId + "-list-a-" + el.id).live('click', switchlike.curry(el.id, switchLikeResource, containerId));
-            $('#' + containerId + "-list-ignore-" + el.id).live('click', switchIgnore.curry(el.id, switchIgnoreResource, containerId));
-            var ahref = $('<a>').addClass('histolink').attr('href','#!/liked/'+el.id).attr('alt',el.description).text(el.name);
+            var ahref = $('<a>').addClass('histolink').attr('href', '#!/liked/' + el.id).attr('alt', el.description).text(el.name);
             var li = $('<li>').attr('id', containerId + '-li-' + el.id);
             $(li).append(ahref).append(likeOrUnlikeButton).append(ignoreButton);
             $('#' + containerId + '-list').append(li);
+            $('#' + containerId + "-list-a-" + el.id).click(switchlike.curry(el.id, switchLikeResource, containerId));
+            $('#' + containerId + "-list-ignore-" + el.id).click(switchIgnore.curry(el.id, switchIgnoreResource, containerId));
          });
 
       }

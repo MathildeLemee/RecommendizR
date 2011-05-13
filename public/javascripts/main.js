@@ -1,4 +1,4 @@
-require(["jquery", "jquery.history", "functional"], function($) {
+require(["jquery", "jquery.history", "openid-jquery", "functional"], function($) {
 
    var setContentPage = function(html) {
       $('#page_content').html(html);
@@ -17,6 +17,7 @@ require(["jquery", "jquery.history", "functional"], function($) {
 
    }
 
+
    $(document).ready(function() {
       Functional.install();
 
@@ -31,6 +32,5 @@ require(["jquery", "jquery.history", "functional"], function($) {
          $.history.load(url);
          return false;
       });
-
    });
 });

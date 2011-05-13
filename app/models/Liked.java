@@ -1,27 +1,31 @@
 package models;
 
-import play.data.validation.MinSize;
-import play.data.validation.Required;
-import play.db.jpa.Model;
-import redis.clients.jedis.Jedis;
+import java.util.Collection;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Lob;
 import javax.persistence.Transient;
 
-import java.util.Collection;
-import java.util.Set;
+import Utils.ObjectUtils;
+import play.data.validation.MaxSize;
+import play.data.validation.MinSize;
+import play.data.validation.Required;
+import play.db.jpa.Model;
+import redis.clients.jedis.Jedis;
 
 /**
  * @author Jean-Baptiste Lemée
  */
 @Entity
-public class Liked extends Model {
+public class Liked extends Model implements Comparable<Liked> {
 
    @Required
    @MinSize(3)
+   @MaxSize(100)
    public String name;
+
+   @MaxSize(255)
    @Required
    @Lob
    @Column(name="description", length=5120)
@@ -30,6 +34,12 @@ public class Liked extends Model {
    public Boolean liked;
    @Transient
    public Boolean ignored;
+
+   @Transient
+   public Long like;
+
+   @Transient
+   public Long ignore;
 
    public String toString() {
       return name;
@@ -44,15 +54,31 @@ public class Liked extends Model {
    public static Collection<Liked> fill(Collection<Liked> likedList, User user, Jedis jedis) {
       if (user != null) {
          for (Liked item : likedList) {
-            item.liked = isLiked(item.getId(), user, jedis);
-            item.ignored = isIgnored(item.getId(), user, jedis);
+            fill(item, user, jedis);
          }
       }
       return likedList;
    }
 
+   public static Liked fill(Liked liked, User user, Jedis jedis) {
+      if (user != null) {
+         liked.liked = isLiked(liked.getId(), user, jedis);
+         liked.ignored = isIgnored(liked.getId(), user, jedis);
+      }
+      liked.like = Long.valueOf(ObjectUtils.<String>defaultIfNull(jedis.hget("l" + liked.id, "count"), "0"));
+      liked.ignore = Long.valueOf(ObjectUtils.<String>defaultIfNull(jedis.hget("l" + liked.id, "countIgnore"), "0"));
+      return liked;
+   }
+
    public static boolean isIgnored(Long likedId, User user, Jedis jedis) {
       boolean r = null != jedis.hget("ignore:u" + user.id, "like:l" + likedId);
       return r;
+   }
+
+   public int compareTo(Liked o) {
+      if(liked == null) return 1;
+      else {
+         return ObjectUtils.<Long>defaultIfNull(this.like, 0l).compareTo(ObjectUtils.<Long>defaultIfNull(o.like, 0l));
+      }
    }
 }

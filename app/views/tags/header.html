@@ -1,7 +1,32 @@
 <header>
    <div class="connected" id="header-welcome">
-      You are connected with <span id="username-welcome"></span>. <a href='@{Security.logout()}'>logout</a>
+      You are connected with <span id="username-welcome"></span>. <a class="logout"
+                                                                     href='@{Security.logout()}'>logout</a>
    </div>
+   <section class="not-connected">
+      <!-- Simple OpenID Selector -->
+      #{form @Secure.authenticate(), method:'get',id:'openid_form'}
+      <input type="hidden" name="action" value="verify"/>
+
+      <fieldset>
+
+         <a class="google" href="javascript:openid.signin('google');"
+            title="Connect with Google">Google</a>
+         <a class="yahoo" href="javascript:openid.signin('yahoo');"
+            title="Connect with Yahoo">Yahoo</a>
+         <a class="twitter" href="javascript:openid.signin('twitter');"
+            title="Connect with Twitter">Twitter</a>
+         <fb:login-button perms="email" size="medium" onlogin="facebookLogin();">Facebook</fb:login-button>
+
+         #{if flash.error}
+         <div class="errorbox">
+            <h2>Erreur</h2>
+            ${flash.error}
+         </div>
+         #{/if}
+      </fieldset>
+      #{/form}
+   </section>
    <h2>Share and get stuff you like !</h2>
 </header>
 

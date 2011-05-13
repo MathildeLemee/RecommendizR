@@ -1,5 +1,6 @@
 package controllers;
 
+import com.google.common.collect.Lists;
 import models.User;
 import play.db.jpa.JPA;
 import redis.clients.jedis.Jedis;
@@ -15,7 +16,9 @@ import java.util.*;
 import static Utils.Redis.newConnection;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
+import org.apache.commons.cli2.util.Comparators;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 import javax.persistence.Query;
 
@@ -31,6 +34,8 @@ public class Application extends Controller {
 
    public static void liked(Long id) {
       Liked liked = findLiked(id);
+      User user = Security.connectedUser();
+      Liked.fill(liked, user, newConnection());
       render(liked);
    }
 
@@ -78,27 +83,42 @@ public class Application extends Controller {
    public static void mostLiked(int howMany) {
       User user = Security.connectedUser();
       Jedis jedis = newConnection();
-      Collection<Liked> list = likedList(user, jedis, "popular");
+      List<Liked> list = Lists.newArrayList(likedList(user, jedis, "popular"));
+      Collections.sort(list, Collections.<Liked>reverseOrder());
       renderJSON(list);
    }
 
    static Collection<Liked> likedList(User user, Jedis jedis, String listName) {
-      Map<String, String> mostPopulars = jedis.hgetAll(listName);
-      if (mostPopulars == null || mostPopulars.size() == 0) {
+      final Map<String, String> relevantLikedMap = jedis.hgetAll(listName);
+      if (relevantLikedMap == null || relevantLikedMap.size() == 0) {
          return new ArrayList<Liked>();
       } else {
-         Query query = JPA.em().createQuery("from Liked where id in (:list)");
-         List<Long> ids = new ArrayList<Long>();
-
-         for (String s : mostPopulars.keySet()) {
-            ids.add(Long.valueOf(s));
-         }
-         query.setParameter("list", ids);
-         Collection<Liked> likedSet = Sets.newHashSet(query.getResultList());
-         removeIgnored(likedSet, user, jedis);
-         Liked.fill(likedSet, user, jedis);
-         return likedSet;
+         List<Liked> likedList = likedFromRelevantMapIds(relevantLikedMap);
+         removeIgnored(likedList, user, jedis);
+         Liked.fill(likedList, user, jedis);
+         sortRelevantList(relevantLikedMap, likedList);
+         return likedList;
       }
+   }
+
+   private static void sortRelevantList(final Map<String, String> relevantLikedMap, List<Liked> likedList) {
+      Collections.sort(likedList, new Comparator<Liked>() {
+         public int compare(Liked l1, Liked l2) {
+            Long scoreL1 = Long.valueOf(relevantLikedMap.get(String.valueOf(l1.id)));
+            Long scoreL2 = Long.valueOf(relevantLikedMap.get(String.valueOf(l2.id)));
+            return scoreL1 == scoreL2 ? 0 : scoreL1 > scoreL2 ? -1 : 1;
+         }
+      });
+   }
+
+   private static List<Liked> likedFromRelevantMapIds(Map<String, String> relevantLikedMap) {
+      Query query = JPA.em().createQuery("from Liked where id in (:list)");
+      Set<Long> ids = new HashSet<Long>();
+      for (String s : relevantLikedMap.keySet()) {
+         ids.add(Long.valueOf(s));
+      }
+      query.setParameter("list", ids);
+      return query.getResultList();
    }
 
    static Liked findLiked(long itemID) {
