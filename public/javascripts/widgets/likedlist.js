@@ -1,4 +1,4 @@
-require.def("widgets/likedlist", ["jquery", "utils"], function($, Utils) {
+require.def("widgets/likedlist", ["jquery"], function($) {
 
    var switchlike = function(likedId, switchLikeResource, containerId, e) {
       e.preventDefault();

@@ -19,7 +19,7 @@ GET		/home    								      Application.home
 POST     /liked                                 Application.addLiked
 
 # Secure routes
-GET      /logout         						      Security.logout
+GET      /logout         						      Secure.logout
 
 # Catch all
 *        /{controller}/{action}                 {controller}.{action}

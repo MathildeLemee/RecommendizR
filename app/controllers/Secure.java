@@ -46,14 +46,9 @@ public class Secure extends Controller {
    }
 
    // ~~~ Login
-
    public static void login() throws Throwable {
       autoConnect();
-      if (isConnected()) {
-         redirectToOriginalURL();
-      } else {
-         forbidden();
-      }
+      redirectToOriginalURL();
    }
 
    public static void authenticate(@Required String username, String password, boolean remember) throws Throwable {

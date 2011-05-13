@@ -1,4 +1,3 @@
-
 <section id=search>
    <form id="search-form" method="post" action="#">
       <fieldset>
@@ -49,10 +48,12 @@
 </section>
 
 <section><h4>Popular stuff :</h4>
+
    <div id="populars"></div>
 </section>
 
 <section><h4>Recent stuff :</h4>
+
    <div id="recents"></div>
 </section>
 
@@ -84,46 +85,26 @@
 
 
 <script type="text/javascript">
-   require(["jquery", "widgets/likedlist", "widgets/likedaddbox", "openid-jquery"], function($, LikedList, LikedAddBox) {
+   require(["jquery", "widgets/likedlist", "widgets/likedaddbox", "widgets/login"], function($, LikedList, LikedAddBox, Login) {
 
       $(document).ready(function() {
-
          $('#search-button').click(function(e) {
             e.preventDefault();
             var searchText = $('#search-input').val();
             LikedList.Instance('search-results', '@{Application.search()}', {limit:10,text: searchText}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
          });
-
          var recentsLiked = new LikedList.Instance('recents', '@{Application.lastAdded()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
          var popularsLiked = new LikedList.Instance('populars', '@{Application.mostLiked()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
 
-         var withConnectedUser = function (username) {
-            $('#username-welcome').html(username);
-            $('.not-connected').hide();
-            $('.connected').fadeIn("fast");
+         var onConnectedUser = function(username) {
+            Login.withConnectedUserDefault(username);
             LikedList.Instance('recommendations', '@{Reco.recommend()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
             var likedAddBox = new LikedAddBox.Instance('add-liked', '@{Reco.addLiked()}');
             likedAddBox.onLikedAdded.add(recentsLiked.refresh);
             likedAddBox.onLikedAdded.add(popularsLiked.refresh);
-         };
+         }
 
-         var withoutConnectedUser = function () {
-            $('.connected').hide();
-            $('.not-connected').fadeIn("fast");
-         };
-
-         var initPage = function() {
-            $.ajax({
-               url: '@{Security.userName()}',
-               success: withConnectedUser,
-               error: withoutConnectedUser
-            });
-
-            openid.init('openid_identifier');
-            openid.setDemoMode(false);
-         };
-
-         initPage();
+         Login.init('@{Security.userName()}', onConnectedUser);
       });
    });
 </script>
