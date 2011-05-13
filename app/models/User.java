@@ -74,8 +74,12 @@ public class User extends Model {
          Logger.info("User creation for twitter : " + twitterName);
          user = new User();
          user.twitter = twitterName;
-         user.email="@"+twitterName;
+         user.email = "@" + twitterName;
          create(jedis, user);
+      }
+      if (user.email == null) {
+         // correctif de migration, A virer quand tout sera stable.
+         user.email = "@" + twitterName;
       }
       return user;
    }
