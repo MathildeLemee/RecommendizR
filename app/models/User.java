@@ -68,12 +68,13 @@ public class User extends Model {
       return user;
    }
 
-    public static User findByTwitterOrCreate(String twitterName, Jedis jedis) {
+   public static User findByTwitterOrCreate(String twitterName, Jedis jedis) {
       User user = findByTwitter(twitterName);
       if (user == null) {
          Logger.info("User creation for twitter : " + twitterName);
          user = new User();
          user.twitter = twitterName;
+         user.email="@"+twitterName;
          create(jedis, user);
       }
       return user;
@@ -82,5 +83,10 @@ public class User extends Model {
    public static void create(Jedis jedis, User user) {
       user.save();
       jedis.sadd("users", String.valueOf(user.id));
+   }
+
+   @Override
+   public String toString() {
+      return email;
    }
 }

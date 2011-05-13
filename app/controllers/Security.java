@@ -5,11 +5,8 @@ import static Utils.Redis.newConnection;
 import java.util.HashMap;
 import java.util.Map;
 
-import Utils.FaceBook;
 import Utils.Twitter;
 import com.google.gson.JsonObject;
-import com.restfb.Facebook;
-import com.restfb.FacebookClient;
 import models.User;
 import models.oauthclient.Credentials;
 import play.Logger;
@@ -42,9 +39,7 @@ public class Security extends Secure.Security {
          }
 
          User user = User.findByMailOrCreate(userEmail, newConnection());
-
          connect(user, true);
-
          Application.index();
 
       } else {
