@@ -1,6 +1,8 @@
 package models;
 
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.persistence.Entity;
 import javax.persistence.Transient;
@@ -72,9 +74,18 @@ public class Liked extends Model implements Comparable<Liked> {
    }
 
    public int compareTo(Liked o) {
-      if(liked == null) return 1;
+      if (liked == null) return 1;
       else {
          return ObjectUtils.<Long>defaultIfNull(this.like, 0l).compareTo(ObjectUtils.<Long>defaultIfNull(o.like, 0l));
       }
+   }
+
+   public void transformPlainUrlToHtml() {
+      description = description.replaceAll(">", "&gt;");
+      description = description.replaceAll("<", "&lt;");
+      String str = "(?i)\\b((?:https?://|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:\'\".,<>?«»“”‘’]))";
+      Pattern patt = Pattern.compile(str);
+      Matcher matcher = patt.matcher(description);
+      description = matcher.replaceAll("<a href=\"$1\">$1</a>");
    }
 }

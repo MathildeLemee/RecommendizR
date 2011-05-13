@@ -1,8 +1,14 @@
 package controllers;
 
-import services.SearchService;
-import models.Liked;
-import models.User;
+import static Utils.Redis.newConnection;
+import static controllers.Application.findLiked;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
@@ -14,22 +20,15 @@ import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
 
+import models.Liked;
+import models.User;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.With;
 import redis.clients.jedis.Jedis;
 import services.CrossingBooleanRecommenderBuilder;
 import services.CrossingDataModelBuilder;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static Utils.Redis.newConnection;
-import static controllers.Application.findLiked;
+import services.SearchService;
 
 @With(Secure.class)
 public class Reco extends Controller {
@@ -161,6 +160,7 @@ public class Reco extends Controller {
       if (StringUtils.isEmpty(liked.name) || StringUtils.isEmpty(liked.description)) {
          badRequest();
       }
+      liked.transformPlainUrlToHtml();
       liked.save();
       User user = Security.connectedUser();
       Jedis jedis = newConnection();
