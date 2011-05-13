@@ -7,11 +7,16 @@ import java.util.Map;
 
 import Utils.FaceBook;
 import Utils.Twitter;
+import com.google.gson.JsonObject;
+import com.restfb.Facebook;
+import com.restfb.FacebookClient;
 import models.User;
 import models.oauthclient.Credentials;
 import play.Logger;
 import play.libs.Crypto;
 import play.libs.OpenID;
+import play.modules.facebook.FbGraph;
+import play.modules.facebook.FbGraphException;
 import play.mvc.Router;
 
 public class Security extends Secure.Security {
@@ -53,8 +58,6 @@ public class Security extends Secure.Security {
          }
          if ("twitter".equalsIgnoreCase(openid_identifier_type)) {
             doTwitter();
-         } else if ("facebook".equalsIgnoreCase(openid_identifier_type)) {
-            doFacebook();
          } else if ("openid".equalsIgnoreCase(openid_identifier_type)) {
             doOpenId(openid_identifier);
          } else {
@@ -75,30 +78,32 @@ public class Security extends Secure.Security {
    private static void doTwitter() {
       // 1: get the request token
       Map<String, Object> args = new HashMap<String, Object>(); // put the origin url here
-      String callbackURL = Router.getFullUrl(request.controller + ".oauthCallback", args);
-      Credentials twitterCreds = new Credentials();
+      String callbackURL = Router.getFullUrl(request.controller + ".oauthTwitterCallback", args);
+      Credentials creds = new Credentials();
       try {
-         Twitter.getConnector().authenticate(twitterCreds, callbackURL);
+         Twitter.getConnector().authenticate(creds, callbackURL);
       } catch (Exception e) {
          flash.error("OAuth failed");
          Application.index();
       }
    }
 
-   private static void doFacebook() {
-      // 1: get the request token
-      Map<String, Object> args = new HashMap<String, Object>(); // put the origin url here
-      String callbackURL = Router.getFullUrl(request.controller + ".oauthCallback", args);
-      Credentials twitterCreds = new Credentials();
+   public static void facebookLogin() {
       try {
-         FaceBook.getConnector().authenticate(twitterCreds, callbackURL);
-      } catch (Exception e) {
-         flash.error("OAuth failed");
+         JsonObject profile = FbGraph.getObject("me"); // fetch the logged in user
+         String email = profile.get("email").getAsString(); // retrieve the email
+         User user = User.findByMailOrCreate(email, newConnection());
+         connect(user, true);
          Application.index();
+      } catch (FbGraphException fbge) {
+         flash.error(fbge.getMessage());
+         if (fbge.getType() != null && fbge.getType().equals("OAuthException")) {
+            forbidden();
+         }
       }
    }
 
-   public static void oauthCallback(String callback, String oauth_token, String oauth_verifier) {
+   public static void oauthTwitterCallback(String callback, String oauth_token, String oauth_verifier) {
       try {
          User user = Twitter.oauthCallback(oauth_verifier);
          connect(user, true);

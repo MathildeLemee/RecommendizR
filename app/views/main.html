@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml">
+
 <head>
    <title>#{get 'title' /}</title>
    <meta charset="utf-8">
@@ -15,7 +16,20 @@
 </head>
 <body>
 #{doLayout /}
+#{fbg.script /}
 <script type="text/javascript">
+   function facebookLogin() {
+      // get current login status from facebook.com
+      FB.getLoginStatus(function(response) {
+         if (response.session) {
+            // logged in and connected user, someone you know
+            window.location = "@{Security.facebookLogin()}";
+         } else {
+            window.location = "@{Secure.logout()}";
+         }
+      });
+   }
+
    require(["jquery"], function($) {
       $(document).ready(function() {
          twttr.anywhere(function (T) {
