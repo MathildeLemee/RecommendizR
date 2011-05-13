@@ -79,7 +79,6 @@
             Login.withConnectedUserDefault(username);
             LikedList.Instance('recommendations', '@{Reco.recommend()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
             var likedAddBox = new LikedAddBox.Instance('add-liked', '@{Reco.addLiked()}');
-            likedAddBox.clear();
             likedAddBox.onLikedAdded.add(recentsLiked.refresh);
             likedAddBox.onLikedAdded.add(popularsLiked.refresh);
          }

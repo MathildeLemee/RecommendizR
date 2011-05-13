@@ -38,14 +38,14 @@ require.def("widgets/likedlist", ["jquery"], function($) {
             var likeOrUnlikeButton = "";
             var ignoreButton = "";
             if (el.liked == true) {
-               likeOrUnlikeButton = " <a id='" + containerId + "-list-a-" + el.id + "' href='#'>unlike</a> ";
+               likeOrUnlikeButton = " <a class='connected' id='" + containerId + "-list-a-" + el.id + "' href='#'>unlike</a> ";
             } else if (el.liked == false) {
-               likeOrUnlikeButton = " <a id='" + containerId + "-list-a-" + el.id + "' href='#'>like</a> ";
+               likeOrUnlikeButton = " <a class='connected' id='" + containerId + "-list-a-" + el.id + "' href='#'>like</a> ";
             }
             if (el.ignored == true) {
-               ignoreButton = " <a id='" + containerId + "-list-ignore-" + el.id + "' href='#'>unignore</a> ";
+               ignoreButton = " <a class='connected' id='" + containerId + "-list-ignore-" + el.id + "' href='#'>unignore</a> ";
             } else if (el.ignored == false) {
-               ignoreButton = " <a id='" + containerId + "-list-ignore-" + el.id + "' href='#'>ignore</a> ";
+               ignoreButton = " <a class='connected' id='" + containerId + "-list-ignore-" + el.id + "' href='#'>ignore</a> ";
             }
             var ahref = $('<a>').addClass('histolink').attr('href', '#!/liked/' + el.id).attr('alt', el.description).text(el.name);
             var li = $('<li>').attr('id', containerId + '-li-' + el.id);

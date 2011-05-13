@@ -250,9 +250,6 @@ require.def("utils", ["jquery", "functional"], function($) {
          this.add = function(f) {
             if (typeof f == "function") handlers[handlers.length] = f;
          };
-         this.clear = function() {
-            handlers = new Array();
-         };
          this.execute = function(param) {
             for (var i = 0; i < handlers.length; ++i) handlers[i](param);
          };
