@@ -12,6 +12,7 @@ GET      /favicon.ico                           404
 GET      /public/                               staticDir:public
 
 GET		/user/name								      Security.userName
+GET      /oauth/callback                        Security.oauthCallback
 
 GET		/liked/{id}								      Application.liked
 GET		/home    								      Application.home

@@ -16,3 +16,4 @@
 *.iws
 *db/*
 *tmp/*
+*modules/*

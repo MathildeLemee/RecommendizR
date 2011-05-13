@@ -4,6 +4,9 @@ require.def("widgets/login", ["jquery"], function($) {
       $('#username-welcome').html(username);
       $('.not-connected').hide();
       $('.connected').fadeIn("fast");
+      twttr.anywhere(function (T) {
+         T.hovercards();
+      });
    };
 
    var withoutConnectedUserDefault = function () {
@@ -17,7 +20,7 @@ require.def("widgets/login", ["jquery"], function($) {
       $.ajax({
          url: url,
          success: withoutConnectedUser,
-         error: function (){
+         error: function () {
             // TODO
          }
       });

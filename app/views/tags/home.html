@@ -20,20 +20,25 @@
 <section>
    <h4>Stuff you should like :</h4>
 
-   <div id="recommendations">
-      <p class="not-connected">To get personnal recommendation, based on what you like, please signin with one of your
+   <div class="connected" id="recommendations"></div>
+   <div class="not-connected">
+      <p>To get personnal recommendation, based on what you like, please signin with one of your
          account :</p>
       <section class="not-connected">
          <!-- Simple OpenID Selector -->
-         #{form @Security.authenticateOpenId(), method:'get',id:'openid_form'}
+         #{form @Secure.authenticate(), method:'get',id:'openid_form'}
          <input type="hidden" name="action" value="verify"/>
 
          <fieldset>
 
-            <a class="google openid_large_btn" href="javascript:openid.signin('google');"
+            <a class="google" href="javascript:openid.signin('google');"
                title="Connect with Google">google</a>
-            <a class="yahoo openid_large_btn" href="javascript:openid.signin('yahoo');"
+            <a class="yahoo" href="javascript:openid.signin('yahoo');"
                title="Connect with Yahoo">yahoo</a>
+            <a class="facebook" href="javascript:openid.signin('facebook');"
+               title="Connect with Facebook">facebook</a>
+            <a class="twitter" href="javascript:openid.signin('twitter');"
+               title="Connect with Twitter">twitter</a>
 
             #{if flash.error}
             <div class="errorbox">
