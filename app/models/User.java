@@ -80,6 +80,7 @@ public class User extends Model {
       if (user.email == null) {
          // correctif de migration, A virer quand tout sera stable.
          user.email = "@" + twitterName;
+         user.save();
       }
       return user;
    }
