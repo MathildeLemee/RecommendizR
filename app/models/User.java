@@ -47,7 +47,7 @@ public class User extends Model {
       if (mail == null) {
          return null;
       }
-      return User.find("from User z where email=:mail").bind("mail", mail.trim().toLowerCase()).first();
+      return User.find("from User z where email=:mail").bind("mail", mail.trim()).first();
    }
 
    public static User findByTwitter(String twitter) {
