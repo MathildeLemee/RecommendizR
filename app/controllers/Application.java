@@ -16,6 +16,7 @@ import static Utils.Redis.newConnection;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 import javax.persistence.Query;
 
@@ -31,6 +32,8 @@ public class Application extends Controller {
 
    public static void liked(Long id) {
       Liked liked = findLiked(id);
+      User user = Security.connectedUser();
+      Liked.fill(liked, user, newConnection());
       render(liked);
    }
 

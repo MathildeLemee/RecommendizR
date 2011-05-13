@@ -37,8 +37,10 @@ public class Reco extends Controller {
    public static void like(Long likedId) {
       User user = Security.connectedUser();
       Jedis jedis = newConnection();
-      doLike(likedId, user, jedis);
-      if(Liked.isIgnored(likedId, user, jedis)){
+      if (!Liked.isLiked(likedId, user, jedis)) {
+         doLike(likedId, user, jedis);
+      }
+      if (Liked.isIgnored(likedId, user, jedis)) {
          doUnignore(likedId, user, jedis);
       }
       renderJSON(Liked.fill(Collections.singleton(findLiked(likedId)), user, jedis));
@@ -47,8 +49,10 @@ public class Reco extends Controller {
    public static void ignore(Long likedId) {
       User user = Security.connectedUser();
       Jedis jedis = newConnection();
-      doIgnore(likedId, user, jedis);
-      if(Liked.isLiked(likedId, user, jedis)){
+      if (!Liked.isIgnored(likedId, user, jedis)) {
+         doIgnore(likedId, user, jedis);
+      }
+      if (Liked.isLiked(likedId, user, jedis)) {
          doUnlike(likedId, user, jedis);
       }
 
@@ -146,9 +150,9 @@ public class Reco extends Controller {
          doUnignore(likedId, user, jedis);
       } else {
          doIgnore(likedId, user, jedis);
-          if (Liked.isLiked(likedId, user, jedis)) {
+         if (Liked.isLiked(likedId, user, jedis)) {
             doUnlike(likedId, user, jedis);
-          }
+         }
       }
       renderJSON(Liked.fill(Collections.singleton(findLiked(likedId)), user, jedis));
    }
