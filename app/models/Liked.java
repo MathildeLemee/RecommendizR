@@ -1,16 +1,16 @@
 package models;
 
+import java.util.Collection;
+
+import javax.persistence.Entity;
+import javax.persistence.Transient;
+
+import Utils.ObjectUtils;
 import play.data.validation.MaxSize;
 import play.data.validation.MinSize;
 import play.data.validation.Required;
 import play.db.jpa.Model;
 import redis.clients.jedis.Jedis;
-
-import javax.persistence.Entity;
-import javax.persistence.Transient;
-
-import java.util.Collection;
-import java.util.Set;
 
 /**
  * @author Jean-Baptiste Lemée
@@ -57,12 +57,12 @@ public class Liked extends Model {
    }
 
    public static Liked fill(Liked liked, User user, Jedis jedis) {
-      if(user != null){
+      if (user != null) {
          liked.liked = isLiked(liked.getId(), user, jedis);
          liked.ignored = isIgnored(liked.getId(), user, jedis);
       }
-      liked.like = Long.valueOf(jedis.hget("l" + liked.id, "count"));
-      liked.ignore = Long.valueOf(jedis.hget("l" + liked.id, "countIgnore"));
+      liked.like = Long.valueOf(ObjectUtils.<String>defaultIfNull(jedis.hget("l" + liked.id, "count"), "0"));
+      liked.ignore = Long.valueOf(ObjectUtils.<String>defaultIfNull(jedis.hget("l" + liked.id, "countIgnore"), "0"));
       return liked;
    }
 
