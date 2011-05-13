@@ -16,7 +16,7 @@ import redis.clients.jedis.Jedis;
  * @author Jean-Baptiste Lemée
  */
 @Entity
-public class Liked extends Model {
+public class Liked extends Model implements Comparable<Liked> {
 
    @Required
    @MinSize(3)
@@ -69,5 +69,12 @@ public class Liked extends Model {
    public static boolean isIgnored(Long likedId, User user, Jedis jedis) {
       boolean r = null != jedis.hget("ignore:u" + user.id, "like:l" + likedId);
       return r;
+   }
+
+   public int compareTo(Liked o) {
+      if(liked == null) return 1;
+      else {
+         return ObjectUtils.<Long>defaultIfNull(this.like, 0l).compareTo(ObjectUtils.<Long>defaultIfNull(o.like, 0l));
+      }
    }
 }
