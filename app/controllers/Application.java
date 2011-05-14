@@ -1,22 +1,37 @@
 package controllers;
 
+import static Utils.Redis.newConnection;
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.persistence.Query;
+
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.common.FastByIDMap;
+import org.apache.mahout.cf.taste.impl.model.BooleanUserPreferenceArray;
+import org.apache.mahout.cf.taste.model.PreferenceArray;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import models.Liked;
 import models.User;
-import org.apache.lucene.queryParser.ParseException;
 import play.Logger;
 import play.db.jpa.JPA;
 import play.mvc.Controller;
 import redis.clients.jedis.Jedis;
 import services.SearchService;
-
-import javax.persistence.Query;
-import java.io.IOException;
-import java.util.*;
-
-import static Utils.Redis.newConnection;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 public class Application extends Controller {
 
@@ -25,6 +40,10 @@ public class Application extends Controller {
    }
 
    public static void home() {
+      render();
+   }
+
+   public static void add() {
       render();
    }
 
@@ -59,6 +78,30 @@ public class Application extends Controller {
       Jedis jedis = newConnection();
       Collection<Liked> list = likedList(user, jedis, "recents");
       renderJSON(list);
+   }
+
+   public static void recommendFromLiked(int limit, Long likedId) throws TasteException {
+      if (likedId == null) {
+         renderJSON(Sets.<Object>newHashSet());
+      }
+      Jedis jedis = newConnection();
+      int trainUsersLimit = 100;
+      Long userId = 0l; // fake user.
+      FastByIDMap<PreferenceArray> usersData = Reco.usersData(jedis, trainUsersLimit, new HashSet<String>());
+      BooleanUserPreferenceArray preferenceArray = new BooleanUserPreferenceArray(1);
+      preferenceArray.setUserID(0, userId);
+      preferenceArray.setItemID(0, likedId);
+      usersData.put(userId, preferenceArray);
+      List<RecommendedItem> recommendedItems = Reco._internalRecommend(limit, userId, usersData);
+      Set<Liked> likedSet = new HashSet<Liked>(recommendedItems.size());
+      for (RecommendedItem item : recommendedItems) {
+         Liked liked = findLiked(item.getItemID());
+         if (liked != null) {
+            likedSet.add(liked);
+         }
+      }
+      Liked.fill(likedSet, Security.connectedUser(), jedis);
+      renderJSON(likedSet);
    }
 
    static <T extends Collection<Liked>> T removeIgnored(T likedCol, User user, Jedis jedis) {

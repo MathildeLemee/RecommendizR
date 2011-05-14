@@ -4,6 +4,7 @@ require.def("widgets/login", ["jquery"], function($) {
       $('#username-welcome').html(username);
       $('.not-connected').hide();
       $('.connected').fadeIn("fast");
+      connected = true;
       twttr.anywhere(function (T) {
          T.hovercards();
       });
@@ -12,6 +13,7 @@ require.def("widgets/login", ["jquery"], function($) {
    var withoutConnectedUserDefault = function () {
       $('.connected').hide();
       $('.not-connected').fadeIn("fast");
+      connected = false;
    };
 
    var onLogout = function(withoutConnectedUser, link) {
