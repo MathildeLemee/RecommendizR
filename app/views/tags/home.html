@@ -26,6 +26,11 @@
    </div>
 </section>
 
+ <section>
+   <h4>Stuff you added recently :</h4>
+   <div class="connected" id="recentlikedbyuser"></div>
+</section>
+
 <section><h4>Popular stuff :</h4>
 
    <div id="populars"></div>
@@ -78,10 +83,12 @@
          var onConnectedUser = function(username) {
             Login.withConnectedUserDefault(username);
             LikedList.Instance('recommendations', '@{Reco.recommend()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
+           var recentLikedByUser = new LikedList.Instance('recentlikedbyuser', '@{Application.recentUserLiked()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
             var likedAddBox = new LikedAddBox.Instance('add-liked', '@{Reco.addLiked()}');
             likedAddBox.onLikedAdded.add(recentsLiked.refresh);
             likedAddBox.onLikedAdded.add(popularsLiked.refresh);
-         }
+            likedAddBox.onLikedAdded.add(recentLikedByUser.refresh);
+        }
 
          Login.init('@{Security.userName()}', onConnectedUser);
 

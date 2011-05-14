@@ -62,6 +62,8 @@ public class Reco extends Controller {
       Long count = jedis.hincrBy("l" + likedId, "count", 1);
       manageRelevantList(likedId, count, jedis, "popular", 10);
       manageRelevantList(likedId, System.currentTimeMillis(), jedis, "recents", 10);
+      manageRelevantList(likedId, System.currentTimeMillis(), jedis, "user:"+user.getId()+":recents", 10);
+
       jedis.hset("u" + user.id, "like:l" + likedId, String.valueOf(likedId));
 
       // Useless ?
