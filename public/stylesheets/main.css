@@ -1,7 +1,50 @@
+/* Reset
+* {
+    margin: 0;
+    padding: 0;
+} */
+
+.clear {
+   clear: both;
+   display: block;
+   margin: 0;
+   padding: 0;
+}
+
+section {
+   margin: 20px;
+}
+
+section#page, section.list {
+   margin: 0;
+   padding: 0;
+}
+
+section#page {
+   display:block;
+}
+
+section#lists, header section#welcome, header section#login {
+   float: right;
+}
+
+section#lists {
+   width: 45%;
+}
+
+section#page_content, header section#menu {
+   float: left;
+   width: 45%;
+}
+
+form {
+
+}
+
 form label {
-    display: block;
-    font-weight: bold;
-    padding-top: 10px;
+   display: block;
+   font-weight: bold;
+   padding-top: 10px;
 }
 
 form textarea {
@@ -11,3 +54,5 @@ form textarea {
 form input {
    width: 300px;
 }
+
+

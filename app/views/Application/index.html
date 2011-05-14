@@ -1,4 +1,58 @@
 #{extends 'site.html' /}
 #{set title:'RecommendizR - Share and get stuff you like' /}
 
-// home is automatically load in main.js via load function
+<section id="lists">
+   <section id="search">
+      <form id="search-form" method="post" action="#">
+         <fieldset>
+            <legend>I'm looking for :</legend>
+            <div>
+               <label for="search-input">Stuff : </label><input type="text" id="search-input" name="search-input"
+                                                                value="${flash.search}" required/>
+               <button id="search-button" type="submit" name="submit">Search</button>
+            </div>
+         </fieldset>
+      </form>
+
+   </section>
+
+   <section><h4>Search results :</h4>
+      <section class="list" id="search-results"></section>
+   </section>
+
+   <section>
+      <h4>Stuff you should like :</h4>
+
+      <section class="connected list" id="user-recommendations"></section>
+      <section class="not-connected list">
+         <p>To get personnal recommendations, based on what you like, please signin</p>
+      </section>
+   </section>
+
+   <section>
+      <h4>People who like that, also like :</h4>
+      <section id="related" class="list"></section>
+   </section>
+
+   <section><h4>Popular stuff :</h4>
+      <section id="populars" class="list"></section>
+   </section>
+
+   <section><h4>Recent stuff :</h4>
+      <section id="recents" class="list"></section>
+   </section>
+</section>
+
+<section id="page_content" class="content">
+   <!-- home is automatically load in main.js via load function -->
+</section>
+
+<script type="text/javascript">
+   require(["jquery", "widgets/likedlist", "widgets/likedaddbox", "widgets/login"], function($, LikedList, LikedAddBox, Login) {
+
+      $(document).ready(function() {
+
+
+      });
+   });
+</script>

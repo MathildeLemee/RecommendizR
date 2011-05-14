@@ -185,14 +185,14 @@ public class Reco extends Controller {
       return Liked.isIgnored(likedId, user, newConnection());
    }
 
-   public static void recommend(int limit) throws TasteException {
+   public static void recommendUser(int limit) throws TasteException {
       User user = Security.connectedUser();
       Jedis jedis = newConnection();
       int trainUsersLimit = 100;
       Map<String, String> ignoreList = jedis.hgetAll("ignore:u" + user.id);
       FastByIDMap<PreferenceArray> usersData = usersData(jedis, trainUsersLimit, ignoreList.keySet());
       usersData.put(user.id, getPreferences(jedis, trainUsersLimit++, user.id, new HashSet<String>()));
-      List<RecommendedItem> recommendedItems = _internalRecommend(limit, user, usersData);
+      List<RecommendedItem> recommendedItems = _internalRecommend(limit, user.id, usersData);
       Set<Liked> likedSet = new HashSet<Liked>(recommendedItems.size());
       for (RecommendedItem item : recommendedItems) {
          Liked liked = findLiked(item.getItemID());
@@ -204,14 +204,14 @@ public class Reco extends Controller {
       renderJSON(likedSet);
    }
 
-   public static List<RecommendedItem> _internalRecommend(int howMany, User user, FastByIDMap<PreferenceArray> usersData) throws TasteException {
+   public static List<RecommendedItem> _internalRecommend(int howMany, Long userId, FastByIDMap<PreferenceArray> usersData) throws TasteException {
       RecommenderBuilder recommenderBuilder = new CrossingBooleanRecommenderBuilder();
       DataModel trainingModel = new CrossingDataModelBuilder().buildDataModel(usersData);
       Recommender recommender = recommenderBuilder.buildRecommender(trainingModel);
-      return recommender.recommend(user.id, howMany, null);
+      return recommender.recommend(userId, howMany, null);
    }
 
-   private static FastByIDMap<PreferenceArray> usersData(Jedis jedis, int limit, Set<String> ignoredKeys) {
+   static FastByIDMap<PreferenceArray> usersData(Jedis jedis, int limit, Set<String> ignoredKeys) {
       FastByIDMap<PreferenceArray> result = new FastByIDMap<PreferenceArray>();
       Set<String> usersIds = jedis.smembers("users");
       int numUser = 0;
@@ -227,7 +227,7 @@ public class Reco extends Controller {
       return result;
    }
 
-   private static BooleanUserPreferenceArray getPreferences(Jedis jedis, int numUser, Long userId, Set<String> ignoredKeys) {
+   static BooleanUserPreferenceArray getPreferences(Jedis jedis, int numUser, Long userId, Set<String> ignoredKeys) {
       Map<String, String> likedIds = jedis.hgetAll("u" + userId);
       BooleanUserPreferenceArray preferenceArray = new BooleanUserPreferenceArray(likedIds.size());
       preferenceArray.setUserID(numUser, userId);

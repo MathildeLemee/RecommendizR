@@ -1,0 +1,29 @@
+<h2>Share stuff you like !</h2>
+<section class="connected" id="add-liked" style="display:none;">
+   #{form @Reco.addLiked(), ,id:'add-liked-form'}
+   <fieldset>
+      <legend>Add stuff you want to share :</legend>
+      <div>
+         <p>
+            <label for="add-liked-input-name">Title : </label>
+            <input maxlength="100" type="text" id="add-liked-input-name" name="add-liked-input-name"
+                   value="${flash.addLikedName}" required/>
+         </p>
+
+         <p>
+            <label for="add-liked-input-description">Description : </label>
+            <textarea type="text" id="add-liked-input-description" name="add-liked-input-description"
+                      value="${flash.addLikeddescription}" required> </textarea>
+
+         <p>
+            <button id="add-liked-button" type="submit" name="submit">Add</button>
+      </div>
+      <div id="add-liked-error" style="display: none;" class="errorbox">
+         Sorry, I can't add that.
+      </div>
+   </fieldset>
+   #{/form}
+</section>
+<section class="not-connected" id="add-liked" style="display:none;">
+    <p>To share stuff you like and get recommendations based on who will like it, you must be connected.</p>
+</section>

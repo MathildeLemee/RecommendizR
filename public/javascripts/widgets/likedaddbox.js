@@ -5,7 +5,7 @@ require.def("widgets/likedaddbox", ["jquery", "utils"], function($, Utils) {
          var self = this;
          self.onLikedAdded = new Utils.Event();
 
-         $('#' + containerId + '-button').click(function(e) {
+         $('#' + containerId + '-button').live('click', function(e) {
             e.preventDefault();
             var name = $('#' + containerId + '-input-name').val();
             var description = $('#' + containerId + '-input-description').val();
