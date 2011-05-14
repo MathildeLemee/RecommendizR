@@ -16,5 +16,7 @@
          $('#liked-section').show();
          $('title').text('RecommendizR - ' + $('#liked-name').text())
       })
+
+      onLoadPage.execute({limit:10, likedId:${liked.id}});
    })
 </script>

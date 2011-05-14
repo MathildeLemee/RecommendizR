@@ -74,14 +74,9 @@
             likedAddBox.onLikedAdded.add(recentsLiked.refresh);
             likedAddBox.onLikedAdded.add(popularsLiked.refresh);
             likedAddBox.onLikedAdded.add(recentLikedByUser.refresh);
-            recentLikedByUser.onClickLiked.add(relatedLiked.refresh);
-            userRecommendations.onClickLiked.add(relatedLiked.refresh);
          }
 
-         recentsLiked.onClickLiked.add(relatedLiked.refresh);
-         popularsLiked.onClickLiked.add(relatedLiked.refresh);
-         relatedLiked.onClickLiked.add(relatedLiked.refresh);
-
+         onLoadPage.add(relatedLiked.refresh);
 
          Login.init('@{Security.userName()}', onConnectedUser);
 

@@ -1,5 +1,8 @@
-var connected = null;
-require(["jquery","widgets/likedlist", "widgets/likedaddbox", "widgets/login",  "jquery.history", "openid-jquery", "functional"], function($, LikedList, LikedAddBox, Login) {
+require(["jquery", "utils", "jquery.history", "openid-jquery", "functional"], function($, Utils) {
+   // Global variable
+   var self = this;
+   self.connected = null;
+   self.onLoadPage = new Utils.Event();
 
    var setContentPage = function(html) {
       $('#page_content').html(html);
