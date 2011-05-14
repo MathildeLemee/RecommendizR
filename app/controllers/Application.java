@@ -1,26 +1,22 @@
 package controllers;
 
 import com.google.common.collect.Lists;
-import models.User;
-import play.db.jpa.JPA;
-import redis.clients.jedis.Jedis;
-import services.SearchService;
 import com.google.common.collect.Sets;
 import models.Liked;
+import models.User;
+import org.apache.lucene.queryParser.ParseException;
 import play.Logger;
+import play.db.jpa.JPA;
 import play.mvc.Controller;
+import redis.clients.jedis.Jedis;
+import services.SearchService;
 
+import javax.persistence.Query;
 import java.io.IOException;
 import java.util.*;
 
 import static Utils.Redis.newConnection;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
-
-import org.apache.commons.cli2.util.Comparators;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.mahout.cf.taste.similarity.UserSimilarity;
-
-import javax.persistence.Query;
 
 public class Application extends Controller {
 
@@ -86,6 +82,15 @@ public class Application extends Controller {
       List<Liked> list = Lists.newArrayList(likedList(user, jedis, "popular"));
       Collections.sort(list, Collections.<Liked>reverseOrder());
       renderJSON(list);
+   }
+
+   public static void recentUserLiked(int howMany) {
+      User user = Security.connectedUser();
+      if (user != null) {
+         Jedis jedis = newConnection();
+         List<Liked> list = Lists.newArrayList(likedList(user, jedis, "user:" + user.getId() + ":recents"));
+         renderJSON(list);
+      }
    }
 
    static Collection<Liked> likedList(User user, Jedis jedis, String listName) {
