@@ -46,33 +46,14 @@ public class Secure extends Controller {
    }
 
    // ~~~ Login
-
    public static void login() throws Throwable {
       autoConnect();
-      if (isConnected()) {
-         redirectToOriginalURL();
-      } else {
-         forbidden();
-      }
+      redirectToOriginalURL();
    }
 
-   public static void authenticate(@Required String username, String password, boolean remember) throws Throwable {
+   public static void authenticate(String action, String openid_identifier, String openid_identifier_type) throws Throwable {
       // Check tokens
-      Boolean allowed = (Boolean) Security.invoke("authenticate", username, password);
-      if (validation.hasErrors() || !allowed) {
-         flash.keep("url");
-         flash.error("secure.error");
-         params.flash();
-         login();
-      }
-      // Mark user as connected
-      session.put("username", username);
-      // Remember if needed
-      if (remember) {
-         response.setCookie("rememberme", Crypto.sign(username) + "-" + username, "30d");
-      }
-      // Redirect to the original URL (or /)
-      redirectToOriginalURL();
+      Boolean allowed = (Boolean) Security.invoke("authenticate", action, openid_identifier, openid_identifier_type);
    }
 
    public static void logout() throws Throwable {

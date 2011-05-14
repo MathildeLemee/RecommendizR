@@ -1,17 +1,42 @@
 <!DOCTYPE html>
 
-<html>
-    <head>
-        <title>#{get 'title' /}</title>
-        <meta charset="utf-8">
-        <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/main.css'}">
-        #{get 'moreStyles' /}
-        <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
-       <!-- <script src="@{'/public/javascripts/jquery.js'}" type="text/javascript" charset="utf-8"></script>-->
-        <script data-main="@{'/public/javascripts'}/main" src="@{'/public/javascripts/require.js'}" type="text/javascript" charset="utf-8"></script>
-        #{get 'moreScripts' /}
-    </head>
-    <body>
-        #{doLayout /}
-    </body>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://www.facebook.com/2008/fbml">
+
+<head>
+   <title>#{get 'title' /}</title>
+   <meta charset="utf-8">
+   <link rel="stylesheet" media="screen" href="@{'/public/stylesheets/main.css'}">
+   #{get 'moreStyles' /}
+   <link rel="shortcut icon" type="image/png" href="@{'/public/images/favicon.png'}">
+   <!-- <script src="@{'/public/javascripts/jquery.js'}" type="text/javascript" charset="utf-8"></script>-->
+   <script data-main="@{'/public/javascripts'}/main" src="@{'/public/javascripts/require.js'}" type="text/javascript"
+           charset="utf-8"></script>
+   <script src="http://platform.twitter.com/anywhere.js?id=OkNKMnFfKlzjFJ6nxYZA&v=1" type="text/javascript"></script>
+   #{get 'moreScripts' /}
+</head>
+<body>
+#{doLayout /}
+#{fbg.script /}
+<script type="text/javascript">
+   function facebookLogin() {
+      // get current login status from facebook.com
+      FB.getLoginStatus(function(response) {
+         if (response.session) {
+            // logged in and connected user, someone you know
+            window.location = "@{Security.facebookLogin()}";
+         } else {
+            window.location = "@{Secure.logout()}";
+         }
+      });
+   }
+
+   require(["jquery"], function($) {
+      $(document).ready(function() {
+         twttr.anywhere(function (T) {
+            T.hovercards();
+         });
+      });
+   });
+</script>
+</body>
 </html>

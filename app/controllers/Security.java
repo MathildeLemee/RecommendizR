@@ -2,20 +2,26 @@ package controllers;
 
 import static Utils.Redis.newConnection;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import Utils.Twitter;
+import com.google.gson.JsonObject;
 import models.User;
+import models.oauthclient.Credentials;
 import play.Logger;
-import play.data.validation.Required;
-import play.db.jpa.GenericModel.JPAQuery;
 import play.libs.Crypto;
 import play.libs.OpenID;
-import redis.clients.jedis.Jedis;
+import play.modules.facebook.FbGraph;
+import play.modules.facebook.FbGraphException;
+import play.mvc.Router;
 
 public class Security extends Secure.Security {
 
    /**
     * Le parametre action ne sert à rien ?
     */
-   public static void authenticateOpenId(String action, String openid_identifier) {
+   public static void authenticate(String action, String openid_identifier, String openid_identifier_type) {
       if (OpenID.isAuthenticationResponse()) {
          OpenID.UserInfo verifiedUser = OpenID.getVerifiedID();
          if (verifiedUser == null) {
@@ -32,17 +38,8 @@ public class Security extends Secure.Security {
             Application.index();
          }
 
-         User user = User.findByMail(userEmail);
-         if (user == null) {
-            Logger.info("User creation for email : " + userEmail);
-            user = new User(userEmail);
-            user.save();
-            Jedis jedis = newConnection();
-            jedis.sadd("users", String.valueOf(user.id));
-         }
-
+         User user = User.findByMailOrCreate(userEmail, newConnection());
          connect(user, true);
-
          Application.index();
 
       } else {
@@ -54,13 +51,62 @@ public class Security extends Secure.Security {
             flash.error("Param openid_identifier is empty");
             Application.index();
          }
-
-         // Verify the id
-         if (!OpenID.id(openid_identifier).required("email", "http://axschema.org/contact/email").verify()) {
-            flash.put("error", "Impossible de s'authentifier avec l'URL utilisée.");
+         if ("twitter".equalsIgnoreCase(openid_identifier_type)) {
+            doTwitter();
+         } else if ("openid".equalsIgnoreCase(openid_identifier_type)) {
+            doOpenId(openid_identifier);
+         } else {
+            flash.error("Param openid_identifier_type is not authorize");
             Application.index();
          }
       }
+   }
+
+   private static void doOpenId(String openid_identifier) {
+      // Verify the id
+      if (!OpenID.id(openid_identifier).required("email", "http://axschema.org/contact/email").verify()) {
+         flash.put("error", "Impossible de s'authentifier avec l'URL utilisée.");
+         Application.index();
+      }
+   }
+
+   private static void doTwitter() {
+      // 1: get the request token
+      Map<String, Object> args = new HashMap<String, Object>(); // put the origin url here
+      String callbackURL = Router.getFullUrl(request.controller + ".oauthTwitterCallback", args);
+      Credentials creds = new Credentials();
+      try {
+         Twitter.getConnector().authenticate(creds, callbackURL);
+      } catch (Exception e) {
+         flash.error("OAuth failed");
+         Application.index();
+      }
+   }
+
+   public static void facebookLogin() {
+      try {
+         JsonObject profile = FbGraph.getObject("me"); // fetch the logged in user
+         String email = profile.get("email").getAsString(); // retrieve the email
+         User user = User.findByMailOrCreate(email, newConnection());
+         connect(user, true);
+         Application.index();
+      } catch (FbGraphException fbge) {
+         flash.error(fbge.getMessage());
+         if (fbge.getType() != null && fbge.getType().equals("OAuthException")) {
+            forbidden();
+         }
+      }
+   }
+
+   public static void oauthTwitterCallback(String callback, String oauth_token, String oauth_verifier) {
+      try {
+         User user = Twitter.oauthCallback(oauth_verifier);
+         connect(user, true);
+      } catch (Exception e) {
+         forbidden(e.getMessage());
+      }
+      Application.index();
+      //redirect(origin)
    }
 
    public static void logout() throws Throwable {
@@ -94,12 +140,6 @@ public class Security extends Secure.Security {
    static User findUser(String mail) {
       User user = User.findByMail(mail);
       return user;
-   }
-
-   protected static void logMultipleUsers(String login, JPAQuery query) {
-      if (query.fetch().size() > 1) {
-         Logger.error("user :%s is not unique", login);
-      }
    }
 
    static boolean check(String profile) {

@@ -28,6 +28,16 @@ var providers = {
       name : 'OpenID',
       label : 'Entrer votre URL Open ID :',
       url : null
+   },
+   facebook:   {
+      name:"Facebook",
+      oauth_version:"2.0",
+      oauth_server:"https://graph.facebook.com/oauth/authorize"
+   },
+   twitter: {
+      name:"Twitter",
+      oauth_version:"2.0",
+      oauth_server:"https://api.twitter.com/oauth/authorize"
    }
 };
 
@@ -42,6 +52,7 @@ var openid = {
    lang: 'en', // language, is set in openid-jquery-<lang>.js
    signin_text: 'Valider', // text on submit button on the form
    provider_url: null,
+   provider_oauth_server : null,
    provider_id: null,
    all_small: false, // output large providers w/ small icons
    no_sprite: false, // don't use sprite image
@@ -67,7 +78,8 @@ var openid = {
 
       this.provider_id = box_id;
       this.provider_url = provider['url'];
-
+      this.provider_oauth_server = provider['oauth_server'];
+      this.provider_name =  provider['name'];
       if (! onload) {
          $('#openid_form').submit();
       }
@@ -75,18 +87,31 @@ var openid = {
    /* Sign-in button click */
    submit: function() {
       var url = openid.provider_url;
+      var oauth = openid.provider_oauth_server;
       if (url) {
          openid.setOpenIdUrl(url);
+         openid.setAuthType('openid');
+      }
+      if (oauth) {
+         openid.setOpenIdUrl(oauth);
+         openid.setAuthType(openid.provider_name);
       }
       return true;
    },
    setOpenIdUrl: function (url) {
-
       var hidden = document.getElementById(this.input_id);
       if (hidden != null) {
          hidden.value = url;
       } else {
          $('#openid_form').append('<input type="hidden" id="' + this.input_id + '" name="' + this.input_id + '" value="' + url + '"/>');
+      }
+   },
+   setAuthType: function (type) {
+      var hidden = document.getElementById(this.input_id + '_type');
+      if (hidden != null) {
+         hidden.value = type;
+      } else {
+         $('#openid_form').append('<input type="hidden" id="' + this.input_id + '_type" name="' + this.input_id + '_type" value="'+type+'"/>');
       }
    },
    setCookie: function (value) {
