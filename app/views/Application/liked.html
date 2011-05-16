@@ -2,21 +2,42 @@
    <h2 id="liked-name">${liked.name}</h2>
 
    <p id="liked-description">${liked.description}</p>
-
-   <p>${liked.like} people like it and ${liked.ignore} ignore it, and you ? </p>
+   ${liked.liked} ${liked.ignored}
+   <p>${liked.like} people like it and ${liked.ignore} ignore it<span
+           class="not-connected">, and you ? signin to vote !</span> <a class='connected' id='like-button' href='#'></a>
+      <a class='connected' id='ignore-button' href='#'></a></p>
 
    <a href="http://twitter.com/share" class="twitter-share-button" data-count="horizontal" data-via="jblemee">Tweet</a>
-   <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+
 </section>
 
 <script type="text/javascript">
-   require(["jquery", "widgets/login"], function($, Login) {
+   require(["jquery", "widgets/login", "widgets/twostatesbutton"], function($, Login, TwoStatesButton) {
       $(document).ready(function() {
          $('#liked-description').html($('#liked-description').text());
          $('#liked-section').show();
          $('title').text('RecommendizR - ' + $('#liked-name').text())
+
+         #{if liked.liked != null}
+            var liked = ${liked.liked};
+         #{/if}
+         #{else}
+            var liked = 'undefined';
+         #{/else}
+         #{if liked.ignored != null}
+            var ignored = ${liked.ignored};
+         #{/if}
+         #{else}
+            var ignored = 'undefined';
+         #{/else}
+
+
+         TwoStatesButton.Instance('like-button', 'unlike', 'like', '@{Reco.switchLike()}', {likedId:${liked.id}}, 'liked', liked, 'likebutton' + '${liked.id}');
+         TwoStatesButton.Instance('ignore-button', 'unignore', 'ignore', '@{Reco.switchIgnore()}', {likedId:${liked.id}}, 'ignored', ignored, 'ignorebutton' + '${liked.id}');
       })
 
       onLoadPage.execute({limit:10, likedId:${liked.id}});
    })
 </script>
+
+<script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
