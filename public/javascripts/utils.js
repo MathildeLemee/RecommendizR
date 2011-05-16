@@ -249,9 +249,13 @@ require.def("utils", ["jquery", "functional"], function($) {
          this.handlers_ = handlers;
          this.add = function(f) {
             if (typeof f == "function") handlers[handlers.length] = f;
+            return handlers.length - 1;
          };
          this.execute = function(param) {
             for (var i = 0; i < handlers.length; ++i) handlers[i](param);
+         };
+         this.remove = function(id) {
+            handlers[id] = null;
          };
       },
 
