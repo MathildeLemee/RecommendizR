@@ -1,15 +1,7 @@
 package controllers;
 
-import static Utils.Redis.newConnection;
-import static controllers.Application.findLiked;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import models.Liked;
+import models.User;
 import org.apache.commons.lang.StringUtils;
 import org.apache.mahout.cf.taste.common.TasteException;
 import org.apache.mahout.cf.taste.eval.RecommenderBuilder;
@@ -19,9 +11,6 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.recommender.Recommender;
-
-import models.Liked;
-import models.User;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.With;
@@ -29,6 +18,12 @@ import redis.clients.jedis.Jedis;
 import services.CrossingBooleanRecommenderBuilder;
 import services.CrossingDataModelBuilder;
 import services.SearchService;
+
+import java.io.IOException;
+import java.util.*;
+
+import static Utils.Redis.newConnection;
+import static controllers.Application.findLiked;
 
 @With(Secure.class)
 public class Reco extends Controller {
@@ -62,8 +57,7 @@ public class Reco extends Controller {
       Long count = jedis.hincrBy("l" + likedId, "count", 1);
       manageRelevantList(likedId, count, jedis, "popular", 10);
       manageRelevantList(likedId, System.currentTimeMillis(), jedis, "recents", 10);
-      manageRelevantList(likedId, System.currentTimeMillis(), jedis, "user:"+user.getId()+":recents", 10);
-
+      manageFifoList(likedId, System.currentTimeMillis(), jedis, "user2:" + user.getId() + ":recents");
       jedis.hset("u" + user.id, "like:l" + likedId, String.valueOf(likedId));
 
       // Useless ?
@@ -87,6 +81,10 @@ public class Reco extends Controller {
          }
       }
    }
+
+   static void manageFifoList(Long likedId, Long score, Jedis jedis, String listName) {
+      jedis.lpush(listName, likedId.toString());
+    }
 
    static Map.Entry<String, String> getLessRelevant(Map<String, String> mostPopulars, Jedis jedis) {
       Map.Entry<String, String> lessLiked = null;

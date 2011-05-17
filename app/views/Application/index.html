@@ -69,7 +69,7 @@
          var onConnectedUser = function(username) {
             Login.withConnectedUserDefault(username);
             var userRecommendations = LikedList.Instance('user-recommendations', '@{Reco.recommendUser()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
-            var recentLikedByUser = new LikedList.Instance('recentlikedbyuser', '@{Application.recentUserLiked()}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
+            var recentLikedByUser = new LikedList.Instance('recentlikedbyuser', '@{Application.recentUserLiked(0,9)}', {limit:10}, '@{Reco.isLiked()}', '@{Reco.switchLike()}', '@{Reco.switchIgnore()}');
             var likedAddBox = new LikedAddBox.Instance('add-liked', '@{Reco.addLiked()}');
             likedAddBox.onLikedAdded.add(recentsLiked.refresh);
             likedAddBox.onLikedAdded.add(popularsLiked.refresh);
