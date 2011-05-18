@@ -1,5 +1,6 @@
 package controllers;
 
+
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -133,19 +134,6 @@ public class Application extends Controller {
          List<Liked> list = Lists.newArrayList(likedFifoList(user, jedis, "user2:" + user.getId() + ":recents", start, stop));
          Collections.reverse(list);
          renderJSON(list);
-      }
-   }
-
-   static Collection<Liked> likedList(User user, Jedis jedis, String listName, Integer start, Integer stop) {
-      final Map<String, String> relevantLikedMap = jedis.hgetAll(listName);
-      if (relevantLikedMap == null || relevantLikedMap.size() == 0) {
-         return new ArrayList<Liked>();
-      } else {
-         List<Liked> likedList = likedFromRelevantIds(relevantLikedMap.keySet());
-         removeIgnored(likedList, user, jedis);
-         Liked.fill(likedList, user, jedis);
-         sortRelevantList(relevantLikedMap, likedList);
-         return likedList;
       }
    }
 
